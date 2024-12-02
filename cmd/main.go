@@ -9,9 +9,11 @@ import (
 func main() {
 	lib := library.NewLibrary()
 	lib.AddBooks(
-		library.Book{Name: "Book A", Author: "Author A"},
-		library.Book{Name: "Book B", Author: "Author B"},
-		library.Book{Name: "Book C", Author: "Author C"},
+		library.Book{Name: "To Kill a Mockingbird", Author: "Harper Lee"},
+		library.Book{Name: "1984", Author: "George Orwell"},
+		library.Book{Name: "Pride and Prejudice", Author: "Jane Austen"},
+		library.Book{Name: "The Great Gatsby", Author: "F. Scott Fitzgerald"},
+		library.Book{Name: "Moby Dick", Author: "Herman Melville"},
 	)
 
 	fmt.Println("Welcome to the Library Management System!")
