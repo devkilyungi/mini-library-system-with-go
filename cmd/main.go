@@ -1,95 +1,76 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/devkilyungi/mini-library-system-with-go/internal/handlers"
 	"github.com/devkilyungi/mini-library-system-with-go/internal/library"
-	"os"
-	"strconv"
-	"strings"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	newLibrary := library.Library{}
-	newLibrary.AddBooks()
+	lib := library.NewLibrary()
+	lib.AddBooks(
+		library.Book{Name: "Book A", Author: "Author A"},
+		library.Book{Name: "Book B", Author: "Author B"},
+		library.Book{Name: "Book C", Author: "Author C"},
+	)
 
 	fmt.Println("Welcome to the Library Management System!")
-	fmt.Println("Choose option:")
+	fmt.Println("\nChoose an option:")
 	fmt.Println("1. View available books")
 	fmt.Println("2. Borrow a book")
 	fmt.Println("3. Return a book")
 	fmt.Println("4. Exit")
 
 	for {
-		fmt.Println("Enter your choice:")
-		availableBooks := newLibrary.GetAvailableBooks()
-		var borrowableBooks []library.Book
-
-		userOption, _ := reader.ReadString('\n')
-		userOption = strings.TrimSpace(userOption)
-		choice, err := strconv.Atoi(userOption)
+		choice, err := handlers.GetUserChoice()
 		if err != nil {
-			fmt.Println("Invalid choice. Please enter a valid number.")
-			return
+			fmt.Println("Invalid input. Please enter a valid number.")
+			continue
 		}
 
 		switch choice {
 		case 1:
 			fmt.Println("Available books:")
-
-			for i := 0; i < len(availableBooks); i++ {
-				if !availableBooks[i].GetBorrowedStatus() {
-					borrowableBooks = append(borrowableBooks, availableBooks[i])
-				}
+			availableBooks := lib.GetAvailableBooks()
+			if len(availableBooks) == 0 {
+				fmt.Println("- No books available.")
+				break
 			}
 
-			for i := 0; i < len(borrowableBooks); i++ {
-				fmt.Printf("- %s\n", borrowableBooks[i].Name)
+			for _, book := range availableBooks {
+				fmt.Printf("- %s by %s\n", book.Name, book.Author)
 			}
 		case 2:
-			// TODO: Correct borrowing logic
-			fmt.Printf("Enter the book title to borrow:")
-			title, _ := reader.ReadString('\n')
-			title = strings.TrimSpace(title)
-			title = strings.ToTitle(title)
-
-			for i := 0; i < len(borrowableBooks); i++ {
-				if borrowableBooks[i].Name == title {
-					success, err := newLibrary.BorrowBook(borrowableBooks[i])
-
-					if success {
-						fmt.Printf("Book %s borrowed!\n", borrowableBooks[i].Name)
-					}
-
-					if err != nil {
-						fmt.Printf("Error borrowing book, %s\n", err)
-					}
-				}
+			title := handlers.GetBookTitle()
+			book, err := lib.FindBookByTitle(title)
+			if err != nil {
+				fmt.Printf("Error: %s\n", err)
+				break
 			}
+
+			if err := book.Borrow(); err != nil {
+				fmt.Printf("Error: %s\n", err)
+				break
+			}
+			fmt.Printf("You have borrowed: %s\n", book.Name)
 		case 3:
-			// TODO: Correct returning logic
-			fmt.Printf("Enter the book title to return:")
-			title, _ := reader.ReadString('\n')
-			title = strings.TrimSpace(title)
-			title = strings.ToTitle(title)
-
-			for i := 0; i < len(availableBooks); i++ {
-				if availableBooks[i].Name == title {
-					success, err := newLibrary.ReturnBook(availableBooks[i])
-
-					if success {
-						fmt.Printf("Book %s returned!\n", availableBooks[i].Name)
-					}
-
-					if err != nil {
-						fmt.Printf("Error returning book, %s\n", err)
-					}
-				}
+			title := handlers.GetBookTitle()
+			book, err := lib.FindBookByTitle(title)
+			if err != nil {
+				fmt.Printf("Error: %s\n", err)
+				break
 			}
+
+			if err := book.Return(); err != nil {
+				fmt.Printf("Error: %s\n", err)
+				break
+			}
+			fmt.Printf("You have returned: %s\n", book.Name)
 		case 4:
-			fmt.Printf("Goodbye!")
+			fmt.Println("Goodbye!")
 			return
+		default:
+			fmt.Println("Invalid option. Please try again.")
 		}
 	}
 }
